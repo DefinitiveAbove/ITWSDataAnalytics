@@ -1,0 +1,76 @@
+
+R version 4.2.2 (2022-10-31 ucrt) -- "Innocent and Trusting" 
+Copyright (C) 2022 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.   
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.   
+
+  Natural language support but running in an English locale 
+
+R is a collaborative project with many contributors.        
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> dataset <- read.csv("dataset_filtered.csv")
+> # print dataset columns
+> print(colnames(dataset))
+[1] "lat"               "lon"               "RH2M"
+[4] "T2M"               "PS"                "PRECTOTCORR_SUM"
+[7] "ALLSKY_SFC_SW_DWN" "cld"               "pet"
+> library("cvTools")
+Loading required package: lattice
+Loading required package: robustbase
+Warning messages:
+1: package 'cvTools' was built under R version 4.2.3
+2: package 'robustbase' was built under R version 4.2.3
+> library("caret")
+Loading required package: ggplot2
+> set.seed(43)
+> train_index <- sample(seq_len(nrow(dataset)), 0.8*nrow(dataset))
+> test_index <- setdiff(seq_len(nrow(dataset)), train_index)
+> train_data <- dataset[train_index,]
+> test_data <- dataset[test_index,]
+> lmTrainControl <- trainControl(method="cv", number=10)
+> lmModel <- train(ALLSKY_SFC_SW_DWN ~ RH2M + T2M + PS + PRECTOTCORR_SUM + cld$
+> lmModel
+Linear Regression
+
+62749 samples
+    6 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold)
+Summary of sample sizes: 56474, 56474, 56474, 56473, 56474, 56474, ...
+Resampling results:
+
+  RMSE      Rsquared   MAE     
+  15.10199  0.9317651  11.77439
+
+Tuning parameter 'intercept' was held constant at a value of TRUE
+> lmModel$finalModel
+
+Call:
+lm(formula = .outcome ~ ., data = dat)
+
+Coefficients:
+    (Intercept)             RH2M              T2M               PS  
+     -2.565e+02        1.787e-01        2.176e+00       -2.073e-03
+PRECTOTCORR_SUM              cld              pet
+     -4.940e+02       -5.835e-01        1.410e+01
+
+> predictedTest <- predict(lmModel, test_data, interval="prediction")
+> png("r_output/lmPredictedTest.png")
+> plot(predictedTest, test_data$ALLSKY_SFC_SW_DWN, xlab="Predicted", ylab="Act$
+> abline(0, 1)
+> dev.off()
+null device 
+          1
+> mean((test_data$ALLSKY_SFC_SW_DWN - predictedTest)^2)
+[1] 228.1964
+> 

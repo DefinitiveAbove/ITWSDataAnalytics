@@ -1,0 +1,75 @@
+
+R version 4.2.2 (2022-10-31 ucrt) -- "Innocent and Trusting" 
+Copyright (C) 2022 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.   
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.  
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.        
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> dataset <- read.csv("dataset_filtered.csv")
+> # print dataset columns
+> print(colnames(dataset))
+[1] "lat"               "lon"               "RH2M"
+[4] "T2M"               "PS"                "PRECTOTCORR_SUM"
+[7] "ALLSKY_SFC_SW_DWN" "cld"               "pet"
+> library("cvTools")
+Loading required package: lattice
+Loading required package: robustbase
+Warning messages:
+1: package 'cvTools' was built under R version 4.2.3
+2: package 'robustbase' was built under R version 4.2.3
+> library("caret")
+Loading required package: ggplot2
+> # library("ranger")
+>
+> # install.packages("ranger")
+>
+> set.seed(43)
+> train_index <- sample(seq_len(nrow(dataset)), 0.8*nrow(dataset))
+> test_index <- setdiff(seq_len(nrow(dataset)), train_index)
+> train_data <- dataset[train_index,]
+> test_data <- dataset[test_index,]
+> knnTrainControl <- trainControl(method="cv", number=10)
+> knnModel <- train(ALLSKY_SFC_SW_DWN ~ RH2M + T2M + PS + PRECTOTCORR_SUM + cl$
+> knnModel
+k-Nearest Neighbors
+
+62749 samples
+    6 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold)
+Summary of sample sizes: 56474, 56474, 56474, 56473, 56474, 56474, ... 
+Resampling results across tuning parameters:
+
+  k  RMSE      Rsquared   MAE     
+  5  16.19112  0.9215664  11.76056
+  7  16.43342  0.9192433  12.06879
+  9  16.79509  0.9157576  12.41413
+
+RMSE was used to select the optimal model using the smallest value.
+The final value used for the model was k = 5.
+> # lmModel <- train(train_data$ALLSKY_SFC_SW_DWN ~ train_data$RH2M + train_da$
+> knnModel$finalModel
+5-nearest neighbor regression model
+> predictedTest <- predict(knnModel, test_data, interval="prediction")
+> png("r_output/knnPredictedTest.png")
+> plot(predictedTest, test_data$ALLSKY_SFC_SW_DWN, xlab="Predicted", ylab="Act$
+> abline(0, 1)
+> dev.off()
+null device 
+          1
+> mean((test_data$ALLSKY_SFC_SW_DWN - predictedTest)^2)
+[1] 257.7016
+> 

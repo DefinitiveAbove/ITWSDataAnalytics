@@ -1,0 +1,121 @@
+
+R version 4.2.2 (2022-10-31 ucrt) -- "Innocent and Trusting"
+Copyright (C) 2022 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale 
+
+R is a collaborative project with many contributors.        
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> dataset <- read.csv("dataset_filtered.csv")
+> # print dataset columns
+> print(colnames(dataset))
+[1] "lat"               "lon"               "RH2M"
+[4] "T2M"               "PS"                "PRECTOTCORR_SUM"
+[7] "ALLSKY_SFC_SW_DWN" "cld"               "pet"
+> library("cvTools")
+Loading required package: lattice
+Loading required package: robustbase
+Warning messages:
+1: package 'cvTools' was built under R version 4.2.3
+2: package 'robustbase' was built under R version 4.2.3
+> library("caret")
+Loading required package: ggplot2
+Use suppressPackageStartupMessages() to eliminate package startup
+messages
+> library("ranger")
+Warning message:
+package 'ranger' was built under R version 4.2.3
+> # install.packages("ranger")
+emaining time: 34 seconds.
+Growing trees.. Progress: 91%. Estimated remaining time: 5 seconds.
+5 seconds.                                               10 seconds.
+Growing trees.. Progress: 75%. Estimated remaining time: 10 seconds.
+Growing trees.. Progress: 52%. Estimated remaining time: 29 seconds.
+Growing trees.. Progress: 80%. Estimated remaining time: 7 seconds.
+Growing trees.. Progress: 60%. Estimated remaining time: 20 seconds.
+Growing trees.. Progress: 44%. Estimated remaining time: 38 seconds.
+Growing trees.. Progress: 87%. Estimated remaining time: 9 seconds.
+Growing trees.. Progress: 64%. Estimated remaining time: 17 seconds.
+Growing trees.. Progress: 53%. Estimated remaining time: 27 seconds.
+Growing trees.. Progress: 39%. Estimated remaining time: 48 seconds.
+Growing trees.. Progress: 88%. Estimated remaining time: 8 seconds.
+Growing trees.. Progress: 53%. Estimated remaining time: 27 seconds.
+Growing trees.. Progress: 95%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 71%. Estimated remaining time: 12 seconds.
+Growing trees.. Progress: 53%. Estimated remaining time: 27 seconds.
+Growing trees.. Progress: 70%. Estimated remaining time: 13 seconds.
+Growing trees.. Progress: 51%. Estimated remaining time: 29 seconds.
+Growing trees.. Progress: 63%. Estimated remaining time: 17 seconds.
+Growing trees.. Progress: 48%. Estimated remaining time: 33 seconds.
+Growing trees.. Progress: 95%. Estimated remaining time: 2 seconds.
+Growing trees.. Progress: 48%. Estimated remaining time: 33 seconds.
+Growing trees.. Progress: 99%. Estimated remaining time: 0 seconds.
+> rfModel
+Random Forest
+
+62749 samples
+    6 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold)
+Summary of sample sizes: 56474, 56474, 56474, 56473, 56474, 56474, ...
+Resampling results across tuning parameters:
+
+  mtry  splitrule   RMSE      Rsquared   MAE
+  2     variance    5.797914  0.9899712  3.729590
+  2     extratrees  6.132212  0.9888164  4.092442
+  4     variance    5.672131  0.9903855  3.576246
+  4     extratrees  5.808376  0.9899385  3.772952
+  6     variance    5.782674  0.9899982  3.609757
+  6     extratrees  5.705049  0.9902849  3.664477
+
+Tuning parameter 'min.node.size' was held constant at a value of 5
+RMSE was used to select the optimal model using the smallest value.
+The final values used for the model were mtry = 4, splitrule = variance
+ and min.node.size = 5.
+> rfModel$finalModel
+Ranger result
+
+Call:
+ ranger::ranger(dependent.variable.name = ".outcome", data = x,      mtry = min(param$mtry, ncol(x)), min.node.size = param$min.node.size,      splitrule = as.character(param$splitrule), write.forest = TRUE,      probability = classProbs, ...)
+
+Type:                             Regression
+Number of trees:                  500
+Sample size:                      62749
+Number of independent variables:  6
+Mtry:                             4
+Target node size:                 5
+Variable importance mode:         none
+Splitrule:                        variance
+OOB prediction error (MSE):       30.8561
+R squared (OOB):                  0.9907664
+>
+> predictedTest <- predict(rfModel, test_data, interval="prediction")
+> png("r_output/lmPredictedTest.png")
+> plot(predictedTest, test_data$ALLSKY_SFC_SW_DWN, xlab="Predicted", ylab="Act$
+> abline(0, 1)
+> dev.off()
+null device 
+          1 
+> mean((test_data$ALLSKY_SFC_SW_DWN - predictedTest)^2)
+[1] 30.73046
+> # export predictedTest to a csv
+> write.csv(predictedTest, "r_output/predictedTest_rfModel.csv")
+> png("r_output/rfPredictedTest.png")
+> plot(predictedTest, test_data$ALLSKY_SFC_SW_DWN, xlab="Predicted", ylab="Act$
+> abline(0, 1)
+> dev.off()
+null device
+          1
+>

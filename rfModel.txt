@@ -1,0 +1,251 @@
+
+R version 4.2.2 (2022-10-31 ucrt) -- "Innocent and Trusting" 
+Copyright (C) 2022 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.   
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.        
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.      
+Type 'q()' to quit R.
+
+> dataset <- read.csv("dataset_filtered.csv")
+> # print dataset columns 
+> print(colnames(dataset))
+[1] "lat"               "lon"               "RH2M"
+[4] "T2M"               "PS"                "PRECTOTCORR_SUM"  
+[7] "ALLSKY_SFC_SW_DWN" "cld"               "pet"
+> library("cvTools")
+Loading required package: lattice
+Loading required package: robustbase
+Warning messages:
+1: package 'cvTools' was built under R version 4.2.3
+2: package 'robustbase' was built under R version 4.2.3
+> library("caret")
+Loading required package: ggplot2
+> set.seed(43)
+> train_index <- sample(seq_len(nrow(dataset)), 0.8*nrow(dataset))
+> test_index <- setdiff(seq_len(nrow(dataset)), train_index)
+> train_data <- dataset[train_index,]
+> test_data <- dataset[test_index,]
+> lmTrainControl <- trainControl(method="cv", number=10)
+> lmModel <- train(ALLSKY_SFC_SW_DWN ~ RH2M + T2M + PS + PRECTOTCORR_SUM + cld$
+> lmModel
+Linear Regression
+
+62749 samples
+    6 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold) 
+Summary of sample sizes: 56474, 56474, 56474, 56473, 56474, 56474, ...
+Resampling results:
+
+  RMSE      Rsquared   MAE     
+  15.10199  0.9317651  11.77439
+
+Tuning parameter 'intercept' was held constant at a value of TRUE
+> # lmModel <- train(train_data$ALLSKY_SFC_SW_DWN ~ train_data$RH2M + train_da$
+> lmModel$finalModel
+
+Call:
+lm(formula = .outcome ~ ., data = dat)
+
+Coefficients:
+    (Intercept)             RH2M              T2M               PS  
+     -2.565e+02        1.787e-01        2.176e+00       -2.073e-03
+PRECTOTCORR_SUM              cld              pet  
+     -4.940e+02       -5.835e-01        1.410e+01
+
+> predictedTest <- predict(lmModel, test_data, interval="prediction")
+> png("r_output/lmPredictedTest.png")
+> plot(predictedTest, test_data$ALLSKY_SFC_SW_DWN, xlab="Predicted", ylab="Act$
+> abline(0, 1)
+> dev.off()
+null device 
+          1
+> mean((test_data$ALLSKY_SFC_SW_DWN - predictedTest)^2)
+[1] 228.1964
+> 
+ *  History restored 
+
+
+R version 4.2.2 (2022-10-31 ucrt) -- "Innocent and Trusting"
+Copyright (C) 2022 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> dataset <- read.csv("dataset_filtered.csv")
+> # print dataset columns
+> print(colnames(dataset))
+[1] "lat"               "lon"               "RH2M"
+[4] "T2M"               "PS"                "PRECTOTCORR_SUM"
+[7] "ALLSKY_SFC_SW_DWN" "cld"               "pet"              
+> library("cvTools")
+Loading required package: lattice
+Loading required package: robustbase
+Warning messages:
+1: package 'cvTools' was built under R version 4.2.3
+2: package 'robustbase' was built under R version 4.2.3 
+> library("caret")
+Loading required package: ggplot2
+> library("ranger")
+Warning message:
+package 'ranger' was built under R version 4.2.3
+> # install.packages("ranger")
+>
+> set.seed(43)
+> train_index <- sample(seq_len(nrow(dataset)), 0.8*nrow(dataset))
+> test_index <- setdiff(seq_len(nrow(dataset)), train_index)
+> train_data <- dataset[train_index,]
+> test_data <- dataset[test_index,]
+> rfTrainControl <- trainControl(method="cv", number=10)
+> rfModel <- train(ALLSKY_SFC_SW_DWN ~ RH2M + T2M + PS + PRECTOTCORR_SUM + cld$
+Growing trees.. Progress: 76%. Estimated remaining time: 10 seconds.
+Growing trees.. Progress: 54%. Estimated remaining time: 26 seconds.
+Growing trees.. Progress: 63%. Estimated remaining time: 18 seconds.
+Growing trees.. Progress: 40%. Estimated remaining time: 46 seconds.
+Growing trees.. Progress: 86%. Estimated remaining time: 10 seconds.
+Growing trees.. Progress: 100%. Estimated remaining time: 0 seconds.
+Growing trees.. Progress: 55%. Estimated remaining time: 25 seconds.
+Growing trees.. Progress: 41%. Estimated remaining time: 44 seconds.
+Growing trees.. Progress: 68%. Estimated remaining time: 28 seconds.
+Growing trees.. Progress: 52%. Estimated remaining time: 29 seconds.
+Growing trees.. Progress: 40%. Estimated remaining time: 46 seconds.
+Growing trees.. Progress: 78%. Estimated remaining time: 17 seconds.
+Growing trees.. Progress: 100%. Estimated remaining time: 0 seconds.
+Growing trees.. Progress: 52%. Estimated remaining time: 29 seconds.
+Growing trees.. Progress: 36%. Estimated remaining time: 55 seconds.
+Growing trees.. Progress: 77%. Estimated remaining time: 18 seconds.
+Growing trees.. Progress: 91%. Estimated remaining time: 3 seconds.
+Growing trees.. Progress: 60%. Estimated remaining time: 21 seconds.
+Growing trees.. Progress: 44%. Estimated remaining time: 39 seconds.
+Growing trees.. Progress: 90%. Estimated remaining time: 6 seconds.
+Growing trees.. Progress: 62%. Estimated remaining time: 19 seconds.
+Growing trees.. Progress: 47%. Estimated remaining time: 35 seconds.
+Growing trees.. Progress: 92%. Estimated remaining time: 5 seconds.
+Growing trees.. Progress: 60%. Estimated remaining time: 20 seconds.
+Growing trees.. Progress: 38%. Estimated remaining time: 50 seconds.
+Growing trees.. Progress: 81%. Estimated remaining time: 14 seconds.
+Growing trees.. Progress: 99%. Estimated remaining time: 0 seconds.
+Growing trees.. Progress: 57%. Estimated remaining time: 23 seconds.
+Growing trees.. Progress: 37%. Estimated remaining time: 53 seconds.
+Growing trees.. Progress: 78%. Estimated remaining time: 17 seconds.
+Growing trees.. Progress: 61%. Estimated remaining time: 20 seconds.
+Growing trees.. Progress: 41%. Estimated remaining time: 44 seconds.
+Growing trees.. Progress: 82%. Estimated remaining time: 13 seconds.
+Growing trees.. Progress: 51%. Estimated remaining time: 29 seconds.
+Growing trees.. Progress: 99%. Estimated remaining time: 0 seconds.
+> rfModel    
+Random Forest  
+
+62749 samples  
+    6 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold)
+Summary of sample sizes: 56474, 56474, 56474, 56473, 56474, 56474, ... 
+Resampling results across tuning parameters:
+
+  mtry  splitrule   RMSE      Rsquared   MAE     
+  2     variance    5.797914  0.9899712  3.729590
+  2     extratrees  6.132212  0.9888164  4.092442
+  4     variance    5.672131  0.9903855  3.576246
+  4     extratrees  5.808376  0.9899385  3.772952
+  6     variance    5.782674  0.9899982  3.609757
+  6     extratrees  5.705049  0.9902849  3.664477
+
+Tuning parameter 'min.node.size' was held constant at a value of 5
+RMSE was used to select the optimal model using the smallest value.
+The final values used for the model were mtry = 4, splitrule = variance
+ and min.node.size = 5.
+> rfModel$finalModel
+Ranger result
+
+Call:
+ ranger::ranger(dependent.variable.name = ".outcome", data = x,      mtry = min(param$mtry, ncol(x)), min.node.size = param$min.node.size,      splitrule = as.character(param$splitrule), write.forest = TRUE,      probability = classProbs, ...)
+
+Type:                             Regression
+Number of trees:                  500 
+Sample size:                      62749
+Number of independent variables:  6
+Mtry:                             4
+Target node size:                 5
+Variable importance mode:         none
+Splitrule:                        variance
+OOB prediction error (MSE):       30.8561 
+R squared (OOB):                  0.9907664
+> predictedTest <- predict(rfModel, test_data, interval="prediction")
+> png("r_output/rfPredictedTest.png")
+> plot(predictedTest, test_data$ALLSKY_SFC_SW_DWN, xlab="Predicted", ylab="Act$
+> abline(0, 1)
+> dev.off()
+null device 
+          1
+> mean((test_data$ALLSKY_SFC_SW_DWN - predictedTest)^2)
+[1] 30.73046
+> # export predictedTest to a csv
+> # add the column data_type to predictedTest and set it to always be "test"
+> predictedTest <- cbind(predictedTest, data_type="test")
+> # rename the column names to be more descriptive
+> # colnames(predictedTest) <- c("predicted", "lower", "upper", "data_type")
+>
+> predictedTrain <- predict(rfModel, train_data, interval="prediction")
+> # add the column data_type to predictedTrain and set it to always be "train"
+> predictedTrain <- cbind(predictedTrain, data_type="train")
+> # merge predictedTrain, predictedTest, and dataset into one dataframe
+> predictedTrain <- cbind(predictedTrain, train_data)
+> predictedTest <- cbind(predictedTest, test_data)
+> predictedTrainTest <- rbind(predictedTrain, predictedTest)
+Error in match.names(clabs, names(xi)) :
+  names do not match previous names
+> colnames(predictedTrain)
+ [1] "predictedTrain"    "data_type"         "lat"
+ [4] "lon"               "RH2M"              "T2M"
+ [7] "PS"                "PRECTOTCORR_SUM"   "ALLSKY_SFC_SW_DWN"
+[10] "cld"               "pet"
+> colnames(predictedTest)
+ [1] "predictedTest"     "data_type"         "lat"
+ [4] "lon"               "RH2M"              "T2M"
+ [7] "PS"                "PRECTOTCORR_SUM"   "ALLSKY_SFC_SW_DWN"
+[10] "cld"               "pet"
+> # merge predictedTrain and predictedTest
+> predictedTrainTest <- rbind(predictedTrain, predictedTest)
+Error in match.names(clabs, names(xi)) :
+  names do not match previous names
+> # in predictedTrain and predictedTest rename prediction column to prediction
+> colnames(predictedTrain)[1] <- "prediction"
+> colnames(predictedTest)[1] <- "prediction"
+> colnames(predictedTrain)
+ [1] "prediction"        "data_type"         "lat"
+ [4] "lon"               "RH2M"              "T2M"
+ [7] "PS"                "PRECTOTCORR_SUM"   "ALLSKY_SFC_SW_DWN"
+[10] "cld"               "pet"
+> colnames(predictedTest)
+ [1] "prediction"        "data_type"         "lat"
+ [4] "lon"               "RH2M"              "T2M"
+ [7] "PS"                "PRECTOTCORR_SUM"   "ALLSKY_SFC_SW_DWN"
+[10] "cld"               "pet"
+> # merge predictedTrain and predictedTest
+> predictedTrainTest <- rbind(predictedTrain, predictedTest)
+> write.csv(predictedTrainTest, "r_output/predictedTest_rfModel.csv")
+>
